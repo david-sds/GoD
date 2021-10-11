@@ -75,7 +75,7 @@ public abstract class Item implements Serializable {
         uses = -1;
     }
 
-    public Item(String name, String description) {
+    public Item(String name, String description, float price) {
         this.name = name;
         this.description = description;
         consumable = false;

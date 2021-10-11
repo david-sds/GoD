@@ -7,6 +7,7 @@ import model.*;
 import persistence.FilePersistence;
 import view.MenuView;
 
+import java.io.StreamCorruptedException;
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -63,12 +64,16 @@ public class MenuController {
     }
 
     public void continueGameMenu() {
-        Game game = menu.continueGame();
-        if(game != null) {
-            this.game = game;
-            launchGameMenu();
-        } else
-            menuView.invalidOption();
+        try {
+            Game game = menu.continueGame();
+            if(game != null) {
+                this.game = game;
+                launchGameMenu();
+            } else
+                menuView.invalidOption();
+        }catch (StreamCorruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void loadGameMenu() {

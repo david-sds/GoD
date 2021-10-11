@@ -79,8 +79,8 @@ public class DayCounter extends Item implements Serializable {
         daysPaused = 0;
     }
 
-    public DayCounter(String name, String description) {
-        super(name, description);
+    public DayCounter(String name, String description, float price) {
+        super(name, description, price);
         daysPaused = 0;
     }
 

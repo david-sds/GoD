@@ -1,7 +1,6 @@
 package model;
 
 import java.io.Serializable;
-import java.util.*;
 
 public class Player implements Serializable {
 
@@ -107,6 +106,9 @@ public class Player implements Serializable {
         return Math.round(100 * Math.pow(1.1, level -1)) - 100;
     }
 
+    public String getNickname() {
+        return nickname;
+    }
 
     @Override
     public String toString() {

@@ -108,20 +108,6 @@ public class FilePersistence {
         }
     }
 
-    public void serialize(Object obj, Path path) {
-        try {
-            FileOutputStream fileOutputStream
-                    = new FileOutputStream(path.toString());
-            ObjectOutputStream objectOutputStream
-                    = new ObjectOutputStream(fileOutputStream);
-            objectOutputStream.writeObject(obj);
-            objectOutputStream.flush();
-            objectOutputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public void serialize(Object obj, String path) {
         try {
             FileOutputStream fileOutputStream
@@ -140,21 +126,6 @@ public class FilePersistence {
         try {
             FileInputStream fileInputStream
                     = new FileInputStream(path);
-            ObjectInputStream objectInputStream
-                    = new ObjectInputStream(fileInputStream);
-            Object obj = objectInputStream.readObject();
-            objectInputStream.close();
-            return obj;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public Object deserialize(Path path) {
-        try {
-            FileInputStream fileInputStream
-                    = new FileInputStream(path.toString());
             ObjectInputStream objectInputStream
                     = new ObjectInputStream(fileInputStream);
             Object obj = objectInputStream.readObject();
