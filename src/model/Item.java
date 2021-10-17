@@ -1,7 +1,6 @@
 package model;
 
 import java.io.Serializable;
-import java.nio.file.Path;
 
 public abstract class Item implements Serializable {
 
@@ -11,10 +10,14 @@ public abstract class Item implements Serializable {
     private String description;
     private float price;
     private boolean consumable;
+    private boolean passive;
+    private boolean active;
     private int uses;
-    private Path path;
+    private transient String path;
 
-    public abstract void use();
+    public void use() {
+        setUses(getUses() + 1);
+    }
 
     @Override
     public String toString() {
@@ -23,8 +26,14 @@ public abstract class Item implements Serializable {
                 ", description='" + description + '\'' +
                 ", price=" + price +
                 ", consumable=" + consumable +
+                ", passive=" + passive +
+                ", active=" + active +
                 ", uses=" + uses +
                 '}';
+    }
+
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
     }
 
     public String getName() {
@@ -59,6 +68,26 @@ public abstract class Item implements Serializable {
         this.consumable = consumable;
     }
 
+    public boolean isPassive() {
+        return passive;
+    }
+
+    public void setPassive(boolean passive) {
+        this.passive = passive;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public void toggleActive() {
+        setActive(!isActive());
+    }
+
     public int getUses() {
         return uses;
     }
@@ -72,13 +101,16 @@ public abstract class Item implements Serializable {
         this.description = description;
         this.price = price;
         this.consumable = consumable;
+        passive = false;
         uses = -1;
     }
 
     public Item(String name, String description, float price) {
         this.name = name;
         this.description = description;
+        this.price = price;
         consumable = false;
+        passive = false;
         uses = -1;
     }
 
@@ -86,6 +118,7 @@ public abstract class Item implements Serializable {
         name = "";
         description = "";
         consumable = false;
+        passive = false;
         uses = -1;
     }
 }

@@ -1,10 +1,11 @@
 package controller;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import main.Game;
 import main.Menu;
 import model.*;
+import model.items.Diary;
 import persistence.FilePersistence;
+import persistence.FilePersistenceOLD;
 import view.MenuView;
 
 import java.io.StreamCorruptedException;
@@ -14,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MenuController {
 
+    private FilePersistenceOLD fp2;
     private FilePersistence fp;
     private Menu menu;
     private MenuView menuView;
@@ -151,7 +153,7 @@ public class MenuController {
     public boolean journalMenu() {
 
         int option = menuView.printMenu(
-                new String[]{
+                new String[] {
                         "JOURNAL MENU",
                         "Complete Quest",
                         "View Quests",
@@ -197,8 +199,31 @@ public class MenuController {
     public void completeQuestMenu() {
         List<Quest> quests = game.getPlayer().getJournal().getQuests();
         int opt = checkIfInputIsValid(menuView.completeQuestMenu(quests), quests.size());
-        if(opt != 0)
-            game.getPlayer().complete(quests.get(opt -1));
+        if(opt != 0) {
+            Quest quest = quests.get(opt - 1);
+            checkIfItemsApplyToQuest(quest);
+            game.getPlayer().complete(quest);
+        }
+    }
+
+    public void checkIfItemsApplyToQuest(Quest quest) {
+        List<Item> items = game.getPlayer().getActiveItems();
+        for(Item item : items) {
+            if(item.isPassive() && item.isActive()) {
+                if(item.getClass().equals(Diary.class))
+                    applyDiary((Diary) item, quest);
+            }
+        }
+    }
+
+    public void applyDiary(Diary diary, Quest quest) {
+        diary.use(
+                diary.getTodayCalendar(),
+                quest.getName(),
+                "X",
+                game.getPlayer(),
+                fp
+        );
     }
 
     public void viewQuestsMenu() {
@@ -261,8 +286,9 @@ public class MenuController {
          Player player = game.getPlayer();
          List<Item> items = player.getInventory().getItems();
          int opt = checkIfInputIsValid(menuView.useItemMenu(items), items.size());
-         if(opt != 0)
-             player.use(player.getInventory().get(opt -1));
+         if(opt != 0) {
+             player.use(player.getInventory().get(opt - 1));
+         }
      }
 
      public void viewPlayerItemsMenu() {
@@ -305,9 +331,11 @@ public class MenuController {
         List<Item> items = store.getStock();
         int opt = checkIfInputIsValid(menuView.buyItemMenu(items), items.size());
         if(opt != 0) {
-            boolean isPurchase = player.buy(store.getStock().get(opt - 1));
-            if(isPurchase)
-                store.getStock().remove(opt -1);
+            Item item = store.getStock().get(opt - 1);
+            boolean isPurchase = player.buy(item);
+            if(isPurchase) {
+                store.getStock().remove(item);
+            }
         }
     }
 
@@ -388,22 +416,35 @@ public class MenuController {
     public void addItemMenu() {
         int opt = checkIfInputIsValid(menuView.addItemMenu(store.getCatalogue()), store.getCatalogue().size());
         if(opt != 0) {
-            createItemMenu(store.getCatalogue().get(opt -1));
+            Item item = createItemMenu(store.getCatalogue().get(opt -1));
+            if(item != null)
+                store.addNewItemToStock(item);
         }
     }
 
-    public void createItemMenu(Class<? extends Item> itemClass) {
-        try {
-            Class<?> c = Class.forName(itemClass.getName());
-            Constructor<?> cons = c.getConstructor();
-            Object obj = cons.newInstance();
-            Item item = (Item) obj;
-            menuView.createItemMenu(itemClass, item);
-            store.addNewItemToStock(item);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//    public void createItemMenu(Class<? extends Item> itemClass) {
+//        try {
+//            Class<?> c = Class.forName(itemClass.getName());
+//            Constructor<?> cons = c.getConstructor();
+//            Object obj = cons.newInstance();
+//            Item item = (Item) obj;
+//            menuView.createItemMenu(itemClass, item);
+//            store.addNewItemToStock(item);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
+    public Item createItemMenu(Class<? extends Item> itemClass) {
+        switch(itemClass.getSimpleName()) {
+            case "Diary":
+                return menuView.createDiaryMenu();
+            case "DayCounter":
+                return menuView.createDayCounterMenu();
+            default:
+                menuView.getIntOption();
+                return null;
+        }
     }
 
     public void removeItemMenu() {
@@ -428,21 +469,22 @@ public class MenuController {
     public void shouldSave() {
         if(menuView.isSave()) {
             menu.saveGame(game);
-            fp.serialize(store, "src/store.ser");
+            fp2.serialize(store, "src/store.ser");
         }
     }
 
     public void shouldSaveStore() {
         if(menuView.isSave()) {
-            fp.serialize(store, "src/store.ser");
+            fp2.serialize(store, "src/store.ser");
         }
     }
 
     public MenuController() {
         menu = new Menu();
         menuView = new MenuView();
-        fp = new FilePersistence("src");
-        store = (Store) fp.deserialize("src\\store.ser");
+        fp2 = new FilePersistenceOLD("src");
+        fp = new FilePersistence("saves/game1");
+        store = (Store) fp2.deserialize("src\\store.ser");
         launchGame();
     }
 

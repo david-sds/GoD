@@ -41,10 +41,6 @@ public class DayCounter extends Item implements Serializable {
         daysPausedCounter = null;
     }
 
-    public void use() {
-        setUses(getUses() + 1);
-    }
-
     public long getNumberOfDaysElapsed() {
         if(finalDate == null) {
             Date currentDate = Calendar.getInstance().getTime();
@@ -76,15 +72,20 @@ public class DayCounter extends Item implements Serializable {
 
     public DayCounter(String name, String description, float price, boolean consumable) {
         super(name, description, price, consumable);
+        setPassive(false);
         daysPaused = 0;
     }
 
     public DayCounter(String name, String description, float price) {
         super(name, description, price);
+        setConsumable(true);
+        setPassive(false);
         daysPaused = 0;
     }
 
     public DayCounter() {
+        setConsumable(true);
+        setPassive(false);
         daysPaused = 0;
     }
 }

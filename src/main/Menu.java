@@ -1,6 +1,9 @@
 package main;
 
-import persistence.FilePersistence;
+import model.Item;
+import model.Quest;
+import model.items.Diary;
+import persistence.FilePersistenceOLD;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -12,11 +15,11 @@ import java.util.stream.Stream;
 
 public class Menu{
 
-    private FilePersistence fp;
+    private FilePersistenceOLD fp;
     private String savesPath;
 
     public void saveGame(Game game) {
-        Path directory = Paths.get(fp.getPath().toString(), game.getName());
+        Path directory = Paths.get(fp.getPath(), game.getName());
         if (!Files.exists(directory)) {
             try {
                 Files.createDirectory(directory);
@@ -57,7 +60,7 @@ public class Menu{
             List<Path> paths = getSavedGamePaths();
             for(Path path : paths) {
                 if(path.endsWith("game.ser"))
-                    games.add( (Game) fp.deserialize(path.toString()));
+                    games.add((Game) fp.deserialize(path.toString()));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -97,7 +100,7 @@ public class Menu{
     public Menu() {
         this.savesPath = "saves";
         createSavesPath();
-        fp = new FilePersistence(savesPath);
+        fp = new FilePersistenceOLD(savesPath);
     }
 }
 

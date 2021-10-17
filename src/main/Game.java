@@ -1,9 +1,13 @@
 package main;
 
+import model.Item;
 import model.Player;
+import model.Quest;
+import model.items.Diary;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 public class Game implements Serializable {
 

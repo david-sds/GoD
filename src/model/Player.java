@@ -1,6 +1,10 @@
 package model;
 
+import model.items.Diary;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Player implements Serializable {
 
@@ -29,6 +33,17 @@ public class Player implements Serializable {
         quest.complete();
         addXp(quest.getReward().xp);
         money += quest.getReward().money;
+    }
+
+    public List<Item> getActiveItems() {
+        List<Item> items = inventory.getItems();
+        List<Item> activeItems = new ArrayList<>();
+        for(Item item : items) {
+            if(item.isActive()) {
+                activeItems.add(item);
+            }
+        }
+        return activeItems;
     }
 
     public void achieve(Achievement achievement) {

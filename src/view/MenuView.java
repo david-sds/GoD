@@ -3,6 +3,7 @@ package view;
 import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import main.Game;
 import model.*;
+import model.items.Diary;
 
 import java.util.List;
 import java.util.Scanner;
@@ -275,6 +276,30 @@ public class MenuView {
         item.setPrice(price);
         item.setConsumable(consumable);
         return item;
+    }
+
+    public Item createDiaryMenu() {
+        System.out.println("\nCREATE DIARY");
+        System.out.print("Item name: ");
+        String name = in.nextLine();
+        System.out.print("Item description: ");
+        String description = in.nextLine();
+        System.out.print("Item price: ");
+        float price = getFloatInput();
+        boolean consumable = getBooleanInput("Do you want it to be consumable?");
+        return new Diary(name, description, price, consumable);
+    }
+
+    public Item createDayCounterMenu() {
+        System.out.println("\nCREATE DAY COUNTER");
+        System.out.print("Item name: ");
+        String name = in.nextLine();
+        System.out.print("Item description: ");
+        String description = in.nextLine();
+        System.out.print("Item price: ");
+        float price = getFloatInput();
+        boolean consumable = getBooleanInput("Do you want it to be consumable?");
+        return new Diary(name, description, price, consumable);
     }
 
     public int removeItemMenu(List<Item> items) {

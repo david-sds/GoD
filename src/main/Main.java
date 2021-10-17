@@ -3,23 +3,30 @@ package main;
 import controller.MenuController;
 import model.Player;
 import model.items.Diary;
+import persistence.FilePersistence;
+
 
 public class Main  {
 
     public static void main(String[] args) {
 
-//        MenuController mc = new MenuController();
+        try {
 
-        Menu menu = new Menu();
+            new MenuController();
 
-        Player player = menu.getSavedGames().get(0).getPlayer();
+//            Menu menu = new Menu();
+//            Game game = menu.getSavedGames().get(0);
+//            Player player = game.getPlayer();
+//            Diary diary = new Diary("DIARIO", "", 100);
+//            FilePersistence fp = new FilePersistence("saves/game1");
+//            diary.use("2021-10-12", "quest2", "-", player, fp);
 
-        Diary diary = new Diary("diary", "diary desc", 10, false);
-        diary.createNewQuestMarker(player.getJournal().getQuests(), "saves/game1");
-        diary.writeDatesUltilToday("saves/game1", "diary.txt");
-        diary.fillAllEmptyFields("saves/game1", "diary.txt");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
-
 }
 
 
