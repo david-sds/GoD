@@ -1,8 +1,12 @@
 package model;
 
+import main.Game;
 import model.items.Diary;
+import persistence.FilePersistence;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +15,7 @@ public class Player implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final String nickname;
-    private final double gamemode;
+    private final Game game;
     private long xp;
     private float money;
     private Journal journal;
@@ -27,6 +31,26 @@ public class Player implements Serializable {
         for(Achievement achievement : achievements) {
             journal.addAchievement(achievement);
         }
+    }
+
+    public void useActiveItemsRelatedToQuest(Quest quest) throws IOException {
+        List<Item> items = game.getPlayer().getActiveItems();
+        for(Item item : items) {
+            if(item.isPassive() && item.isActive()) {
+                if(item.getClass().equals(Diary.class))
+                    applyDiary((Diary) item, quest);
+            }
+        }
+    }
+
+    public void applyDiary(Diary diary, Quest quest) throws IOException {
+        diary.use(
+                diary.getTodayCalendar(),
+                quest.getName(),
+                "X",
+                game.getPlayer(),
+                new FilePersistence(Paths.get("saves", game.getName()))
+        );
     }
 
     public void complete(Quest quest) {
@@ -118,7 +142,7 @@ public class Player implements Serializable {
     }
 
     public long getXpFloorOnGivenLevel(int level) {
-        return Math.round(100 * Math.pow(1.1, level -1)) - 100;
+        return Math.round(100 * Math.pow(game.getGamemode(), level -1)) - 100;
     }
 
     public String getNickname() {
@@ -129,7 +153,6 @@ public class Player implements Serializable {
     public String toString() {
         return "Player{" +
                 "nickname='" + nickname + '\'' +
-                ", gamemode=" + gamemode +
                 ", xp=" + xp +
                 ", money=" + money +
                 ", journal=" + journal +
@@ -145,9 +168,9 @@ public class Player implements Serializable {
         return inventory;
     }
 
-    public Player(String nickname, double gamemode) {
+    public Player(String nickname, Game game) {
         this.nickname = nickname;
-        this.gamemode = gamemode;
+        this.game = game;
         xp = 0;
         money = 0.0f;
         journal = new Journal();

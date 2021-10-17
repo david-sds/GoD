@@ -3,28 +3,25 @@ package controller;
 import main.Game;
 import main.Menu;
 import model.*;
-import model.items.Diary;
 import persistence.FilePersistence;
-import persistence.FilePersistenceOLD;
-import view.MenuView;
+import view.ConsoleMenuView;
 
+import java.io.IOException;
 import java.io.StreamCorruptedException;
-import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class MenuController {
+public class ConsoleMenuController {
 
-    private FilePersistenceOLD fp2;
     private FilePersistence fp;
     private Menu menu;
-    private MenuView menuView;
+    private ConsoleMenuView menuView;
     private Game game;
     private Store store;
 
     // MAIN MENU METHODS
 
-    public void launchGame() {
+    public void launchGame() throws IOException {
 
         menuView.sayHi();
         boolean keepRunning = mainMenu();
@@ -42,7 +39,7 @@ public class MenuController {
 
     }
 
-    public boolean mainMenu() {
+    public boolean mainMenu() throws IOException {
         switch(menuView.mainMenu()) {
             case 1:
                 continueGameMenu();
@@ -75,10 +72,12 @@ public class MenuController {
                 menuView.invalidOption();
         }catch (StreamCorruptedException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    public void loadGameMenu() {
+    public void loadGameMenu() throws IOException {
         List<Game> savedGames = menu.getSavedGames();
         int opt = checkIfInputIsValid(menuView.loadGameMenu(savedGames), savedGames.size());
         if(opt == 0) return;
@@ -86,13 +85,13 @@ public class MenuController {
         launchGameMenu();
     }
 
-    public void newGameMenu() {
+    public void newGameMenu() throws IOException {
 
         game = menuView.newGameMenu();
         launchGameMenu();
     }
 
-    public void launchGameMenu() {
+    public void launchGameMenu() throws IOException {
         boolean keepRunning = gameMenu();
         while (keepRunning) {
             keepRunning = gameMenu();
@@ -102,7 +101,7 @@ public class MenuController {
 
     // GAME MENU METHODS
 
-    public boolean gameMenu() {
+    public boolean gameMenu() throws IOException {
         switch(menuView.gameMenu()) {
             case 1:
                 launchJournalMenu();
@@ -126,7 +125,7 @@ public class MenuController {
         return true;
     }
 
-    public void launchJournalMenu() {
+    public void launchJournalMenu() throws IOException {
         boolean keepRunning = journalMenu();
         while (keepRunning) {
             keepRunning = journalMenu();
@@ -150,7 +149,7 @@ public class MenuController {
 
     // JOURNAL MENU METHODS
 
-    public boolean journalMenu() {
+    public boolean journalMenu() throws IOException {
 
         int option = menuView.printMenu(
                 new String[] {
@@ -196,34 +195,14 @@ public class MenuController {
         return true;
     }
 
-    public void completeQuestMenu() {
+    public void completeQuestMenu() throws IOException {
         List<Quest> quests = game.getPlayer().getJournal().getQuests();
         int opt = checkIfInputIsValid(menuView.completeQuestMenu(quests), quests.size());
         if(opt != 0) {
             Quest quest = quests.get(opt - 1);
-            checkIfItemsApplyToQuest(quest);
+            game.getPlayer().useActiveItemsRelatedToQuest(quest);
             game.getPlayer().complete(quest);
         }
-    }
-
-    public void checkIfItemsApplyToQuest(Quest quest) {
-        List<Item> items = game.getPlayer().getActiveItems();
-        for(Item item : items) {
-            if(item.isPassive() && item.isActive()) {
-                if(item.getClass().equals(Diary.class))
-                    applyDiary((Diary) item, quest);
-            }
-        }
-    }
-
-    public void applyDiary(Diary diary, Quest quest) {
-        diary.use(
-                diary.getTodayCalendar(),
-                quest.getName(),
-                "X",
-                game.getPlayer(),
-                fp
-        );
     }
 
     public void viewQuestsMenu() {
@@ -466,25 +445,23 @@ public class MenuController {
         return input;
     }
 
-    public void shouldSave() {
-        if(menuView.isSave()) {
+    public void shouldSave() throws IOException {
+        if(menuView.isSave("Save Game?")) {
             menu.saveGame(game);
-            fp2.serialize(store, "src/store.ser");
+            menu.saveStore(store);
         }
     }
 
     public void shouldSaveStore() {
-        if(menuView.isSave()) {
-            fp2.serialize(store, "src/store.ser");
+        if(menuView.isSave("Save Store?")) {
+            menu.saveStore(store);
         }
     }
 
-    public MenuController() {
+    public ConsoleMenuController() throws IOException {
         menu = new Menu();
-        menuView = new MenuView();
-        fp2 = new FilePersistenceOLD("src");
-        fp = new FilePersistence("saves/game1");
-        store = (Store) fp2.deserialize("src\\store.ser");
+        menuView = new ConsoleMenuView();
+        store = menu.loadStore();
         launchGame();
     }
 

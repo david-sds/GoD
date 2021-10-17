@@ -15,22 +15,18 @@ public class Diary extends Item implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public void use(Calendar date, String questName, String value, Player player, FilePersistence fp) {
-        try {
-            setup(player, fp);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void use(Calendar date, String questName, String value, Player player, FilePersistence fp)
+            throws IOException
+    {
+        setup(player, fp);
         String dateStr = calendarToStrDate(date);
         fillFieldWithValue(dateStr, questName, value, fp);
     }
 
-    public void use(String date, String questName, String value, Player player, FilePersistence fp) {
-        try {
-            setup(player, fp);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void use(String date, String questName, String value, Player player, FilePersistence fp)
+            throws IOException
+    {
+        setup(player, fp);
         fillFieldWithValue(date, questName, value, fp);
     }
 
@@ -76,13 +72,6 @@ public class Diary extends Item implements Serializable {
         }
     }
 
-    public Calendar getTodayCalendar() {
-        Calendar today = Calendar.getInstance();
-        TimeZone brt = TimeZone.getTimeZone("BRT");
-        today.setTimeZone(brt);
-        return today;
-    }
-
     public void createFields(FilePersistence fp) {
         List<String> fileData = fp.fileToList();
         String[] header = fileData.get(0).split("\t");
@@ -113,32 +102,6 @@ public class Diary extends Item implements Serializable {
             }
         }
         fp.writeLineByKey(date, String.join("\t", line), "\t");
-    }
-
-    private Calendar strDateToCalendar(String date) {
-        String[] dateFields = date.split("-");
-        Calendar c = Calendar.getInstance();
-        int year = Integer.parseInt(dateFields[0]);
-        int month = Integer.parseInt(dateFields[1]);
-        int day = Integer.parseInt(dateFields[2]);
-        c.set(year, month-1, day);
-        return c;
-    }
-
-    private String calendarToStrDate(Calendar calendar) {
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        return formatDate(year, month+1, day);
-    }
-
-    private String formatDate(int year, int month, int day) {
-        String date = year + "-";
-        if(month < 10) date += 0;
-        date +=  month + "-";
-        if(day < 10) date += 0;
-        date += day;
-        return date;
     }
 
     public Diary(String name, String description, float price, boolean consumable) {

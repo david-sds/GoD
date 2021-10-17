@@ -14,7 +14,8 @@ public class Game implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String name;
-    private Player player;
+    private final double gamemode;
+    private final Player player;
     private Date dateCreated;
 
     @Override
@@ -30,6 +31,10 @@ public class Game implements Serializable {
         return name;
     }
 
+    public double getGamemode() {
+        return gamemode;
+    }
+
     public Player getPlayer() {
         return player;
     }
@@ -38,15 +43,17 @@ public class Game implements Serializable {
         return dateCreated;
     }
 
-    public Game(String name, Player player) {
+    public Game(String name, Double gamemode, Player player) {
         this.name = name;
+        this.gamemode = gamemode;
         this.player = player;
         dateCreated = new Date(System.currentTimeMillis());
     }
 
-    public Game(String name, String nickname, Double gamemode) {
+    public Game(String name, Double gamemode, String nickname) {
         this.name = name;
-        player = new Player(nickname, gamemode);
+        this.gamemode = gamemode;
+        player = new Player(nickname, this);
         dateCreated = new Date(System.currentTimeMillis());
     }
 

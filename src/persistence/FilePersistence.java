@@ -1,9 +1,13 @@
 package persistence;
 
+import main.Game;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +45,13 @@ public class FilePersistence {
         return fileReader.deserialize();
     }
 
+    public Object readObject(String path) {
+        return fileReader.deserialize(path);
+    }
+
+    public Object readObject(Path path) {
+        return fileReader.deserialize(path.toString());
+    }
 
     // WRITE METHODS
 
@@ -81,23 +92,54 @@ public class FilePersistence {
         fileWriter.serialize(obj);
     }
 
+    public void writeObject(Object obj, String path) {
+        fileWriter.serialize(obj, path);
+    }
+
+    public void writeObject(Object obj, Path path) {
+        fileWriter.serialize(obj, path.toString());
+    }
 
     // OTHER METHODS
 
-    public Path createFile(Path filePath) throws IOException {
-        return Files.createFile(filePath);
+    public Path getLastModifiedFile(List<Path> filePaths) throws IOException {
+        BasicFileAttributes attr = Files.readAttributes(filePaths.get(0), BasicFileAttributes.class);
+        FileTime lastModifiedPathTime = attr.lastModifiedTime();
+        Path lastModifiedPath = filePaths.get(0);
+
+        for (Path path : filePaths) {
+            attr = Files.readAttributes(path, BasicFileAttributes.class);
+            FileTime timeModified = attr.lastModifiedTime();
+            if (lastModifiedPathTime.compareTo(timeModified) < 0) {
+                lastModifiedPath = path;
+                lastModifiedPathTime = timeModified;
+            }
+        }
+        return lastModifiedPath;
+    }
+
+    public Path createFile() throws IOException {
+        return Files.createFile(Paths.get(path));
     }
 
     public Path createFile(String filePath) throws IOException {
         return Files.createFile(Paths.get(filePath));
     }
 
-    public Path createFolder(Path path) throws IOException{
-        return Files.createDirectories(path);
+    public Path createFile(Path filePath) throws IOException {
+        return Files.createFile(filePath);
     }
 
-    public Path createFolder(String path) throws IOException{
+    public Path createFolder() throws IOException {
         return Files.createDirectories(Paths.get(path));
+    }
+
+    public Path createFolder(String path) throws IOException {
+        return Files.createDirectories(Paths.get(path));
+    }
+
+    public Path createFolder(Path path) throws IOException {
+        return Files.createDirectories(path);
     }
 
     public boolean isPathAFile() {
@@ -198,6 +240,10 @@ public class FilePersistence {
         }
 
         public void serialize(Object obj) {
+            serialize(obj, path);
+        }
+
+        public void serialize(Object obj, String path) {
             try {
                 FileOutputStream fileOutputStream
                         = new FileOutputStream(path);
@@ -242,6 +288,10 @@ public class FilePersistence {
         }
 
         public Object deserialize() {
+            return deserialize(path);
+        }
+
+        public Object deserialize(String path) {
             try {
                 FileInputStream fileInputStream
                         = new FileInputStream(path);

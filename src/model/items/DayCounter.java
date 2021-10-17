@@ -66,6 +66,10 @@ public class DayCounter extends Item implements Serializable {
         this.startDate = startDate;
     }
 
+    public void setStartDate(String startDateStr) {
+        this.startDate = strDateToCalendar(startDateStr).getTime();
+    }
+
     public Date getFinalDate() {
         return finalDate;
     }

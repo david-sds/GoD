@@ -1,9 +1,8 @@
 package main;
 
-import model.Item;
-import model.Quest;
-import model.items.Diary;
-import persistence.FilePersistenceOLD;
+import model.Store;
+import persistence.FilePersistence;
+
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -15,41 +14,22 @@ import java.util.stream.Stream;
 
 public class Menu{
 
-    private FilePersistenceOLD fp;
+    private FilePersistence fp;
     private String savesPath;
 
-    public void saveGame(Game game) {
-        Path directory = Paths.get(fp.getPath(), game.getName());
-        if (!Files.exists(directory)) {
-            try {
-                Files.createDirectory(directory);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        fp.serialize(game, Paths.get(directory.toString(), "game.ser").toString());
+    public void saveGame(Game game) throws IOException {
+        fp.setPath(Paths.get(fp.getPath(), game.getName()));
+        if (!fp.isPath())
+            fp.createFolder();
+        fp.writeObject(game, Paths.get(fp.getPath(), "game.ser"));
+        fp.setPath(savesPath);
     }
 
-    public Game continueGame() throws StreamCorruptedException {
-        try {
-            List<Path> savedGamesPaths = getSavedGamePaths();
-            if(savedGamesPaths.size() != 0) {
-                BasicFileAttributes attr = Files.readAttributes(savedGamesPaths.get(0), BasicFileAttributes.class);
-                FileTime lastDateModified = attr.lastModifiedTime();
-                Path lastGamePlayedPath = savedGamesPaths.get(0);
-
-                for (Path path : savedGamesPaths) {
-                    attr = Files.readAttributes(path, BasicFileAttributes.class);
-                    FileTime dateModified = attr.lastModifiedTime();
-                    if (lastDateModified.compareTo(dateModified) < 0) {
-                        lastDateModified = dateModified;
-                        lastGamePlayedPath = path;
-                    }
-                }
-                return (Game) fp.deserialize(lastGamePlayedPath.toString());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    public Game continueGame() throws IOException {
+        List<Path> savedGamesPaths = getSavedGamePaths();
+        if (savedGamesPaths.size() != 0) {
+            Path lastGamePlayedPath = fp.getLastModifiedFile(savedGamesPaths);
+            return (Game) fp.readObject(lastGamePlayedPath.toString());
         }
         return null;
     }
@@ -60,7 +40,7 @@ public class Menu{
             List<Path> paths = getSavedGamePaths();
             for(Path path : paths) {
                 if(path.endsWith("game.ser"))
-                    games.add((Game) fp.deserialize(path.toString()));
+                    games.add((Game) fp.readObject(path.toString()));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -70,37 +50,40 @@ public class Menu{
 
     private List<Path> getSavedGamePaths() throws IOException {
         List<Path> result;
-        try(Stream<Path> walk = Files.walk(Paths.get(fp.getPath().toString()), 2)) {
+        try(Stream<Path> walk = Files.walk(Paths.get(fp.getPath()), 2)) {
             result = walk.filter(Files::isRegularFile)
                     .collect(Collectors.toList());
         }
         return result;
     }
 
-    public void createSavesPath() {
-        if(!Files.exists(Paths.get(savesPath))) {
-            try {
-                Files.createDirectories(Paths.get(savesPath));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+    public void createSavesPath() throws IOException {
+        if(!fp.isPath())
+            fp.createFolder();
     }
 
     public String getSavesPath() {
         return savesPath;
     }
 
-    public void setSavesPath(String savesPath) {
+    public void setSavesPath(String savesPath) throws IOException {
         this.savesPath = savesPath;
         createSavesPath();
         System.out.println("WARNING: Your saves are in the old folder, copy and paste them manually.");
     }
 
-    public Menu() {
+    public void saveStore(Store store) {
+        fp.writeObject(store, "src/store.ser");
+    }
+
+    public Store loadStore() {
+        return (Store) fp.readObject("src/store.ser");
+    }
+
+    public Menu() throws IOException {
         this.savesPath = "saves";
+        fp = new FilePersistence(savesPath);
         createSavesPath();
-        fp = new FilePersistenceOLD(savesPath);
     }
 }
 

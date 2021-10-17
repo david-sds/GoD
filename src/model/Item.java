@@ -1,6 +1,8 @@
 package model;
 
 import java.io.Serializable;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 public abstract class Item implements Serializable {
 
@@ -30,6 +32,39 @@ public abstract class Item implements Serializable {
                 ", active=" + active +
                 ", uses=" + uses +
                 '}';
+    }
+
+    protected Calendar getTodayCalendar() {
+        Calendar today = Calendar.getInstance();
+        TimeZone brt = TimeZone.getTimeZone("BRT");
+        today.setTimeZone(brt);
+        return today;
+    }
+
+    protected Calendar strDateToCalendar(String date) {
+        String[] dateFields = date.split("-");
+        Calendar c = Calendar.getInstance();
+        int year = Integer.parseInt(dateFields[0]);
+        int month = Integer.parseInt(dateFields[1]);
+        int day = Integer.parseInt(dateFields[2]);
+        c.set(year, month-1, day);
+        return c;
+    }
+
+    protected String calendarToStrDate(Calendar calendar) {
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        return formatDate(year, month+1, day);
+    }
+
+    protected String formatDate(int year, int month, int day) {
+        String date = year + "-";
+        if(month < 10) date += 0;
+        date +=  month + "-";
+        if(day < 10) date += 0;
+        date += day;
+        return date;
     }
 
     public static long getSerialVersionUID() {

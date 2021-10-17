@@ -8,7 +8,7 @@ import model.items.Diary;
 import java.util.List;
 import java.util.Scanner;
 
-public class MenuView {
+public class ConsoleMenuView {
 
     Scanner in;
 
@@ -44,7 +44,7 @@ public class MenuView {
         String playerName = in.nextLine();
         System.out.print("Difficulty factor: ");
         Double difficultyFactor = getDoubleInput();
-        return new Game(gameName, playerName, difficultyFactor);
+        return new Game(gameName, difficultyFactor, playerName);
     }
 
 
@@ -342,14 +342,14 @@ public class MenuView {
         return getIntInput();
     }
 
-    public boolean isSave() {
-        System.out.print("\nSave Game? (y/n): ");
+    public boolean isSave(String saveQuestion) {
+        System.out.print("\n"+saveQuestion+" (y/n): ");
         String answer = in.nextLine();
         if(answer.equalsIgnoreCase("y") || answer.equalsIgnoreCase("n")) {
             return answer.equalsIgnoreCase("y");
         } else {
             invalidOption();
-            isSave();
+            isSave(saveQuestion);
         }
         return true;
     }
@@ -409,7 +409,7 @@ public class MenuView {
         System.out.println("\nFarewell!\n");
     }
 
-    public MenuView() {
+    public ConsoleMenuView() {
         in = new Scanner(System.in);
     }
 
